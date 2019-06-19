@@ -1,19 +1,40 @@
 # coursier-hang
 
-Running `sbt update` results in:
+1. run `docker-compose up -d`
+
+2. run `sbt -no-global update`
+
+It tries to download the non-existent dependency in a loop:
 
 ```
-[info] Loading settings for project global-plugins from plugins.sbt,idea.sbt,metals.sbt ...
-[info] Loading global plugins from /home/claudio/.sbt/1.0/plugins
-[info] Loading settings for project coursier-update-build from plugins.sbt ...
-[info] Loading project definition from /home/claudio/sandbox/coursier-update/project
-[info] Loading settings for project root from build.sbt ...
-[info] Set current project to coursier-update (in build file:/home/claudio/sandbox/coursier-update/)
-[info] Updating root
-https://artifactory.xyz.com/ivy-virtual/org.mortbay.jetty/jetty/6.1.12.rc+/ivys/ivy.xml.sha1
-    0.0% [          ] 0 B (0 B / s)
-https://artifactory.xyz.com/ivy-virtual/org.mortbay.jetty/jetty/6.1.12.rc+/ivys/ivy.xml
-    0.0% [          ] 0 B (0 B / s)
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET /ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml 
+HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 404 154 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET /ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml 
+HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - - [19/Jun/2019:06:51:39 +0000] "GET 
+/ivy-virtual/com.sample/common-lib_2.12/19.23.0-does-not-exist/ivys/ivy.xml.sha1 HTTP/1.1" 401 180 "-" "" "-"
+nginx_1  | 172.20.0.1 - arti [19/Jun/2019:06:51:39 +0000] "GET /ivy-vi
+...
 ```
 
-Requesting those URLs should result in a 404, actually.
+It should stop fetching the resources after receiving a 404.
